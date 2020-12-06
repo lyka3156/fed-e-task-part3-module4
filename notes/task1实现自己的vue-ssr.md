@@ -1215,7 +1215,9 @@ server.use(
 );
 ```
 
-# 4. 编写通用代码
+# 4. 编写通用代码注意事项
+
+[参考文献](https://ssr.vuejs.org/zh/guide/universal.html#%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84%E6%95%B0%E6%8D%AE%E5%93%8D%E5%BA%94)
 
 我们现在终于把实现 Vue SSR 同构应用的基础环境搭建起来了，虽然还有很多不足之处，但是也能满足我们当前的基本使用了。
 
@@ -1268,17 +1270,246 @@ new webpack.DefinePlugin({
 
 # 5. 路由和代码分割
 
+[参考文献](https://ssr.vuejs.org/zh/guide/routing.html)
+
+接下来我们来了解一下如何处理通用应用中的路由。
+
+官方文档给出的解决方案肯定还是使用 `vue-router`，整体使用方式和纯客户端的使用方式基本一致，只需要在少许的位置做一些配置就可以了。文档中已经把配置的方式描述的很清楚了，建议大家认真看一下文档，下面我把具体的实现来演示一下。
+
+安装
+
+```js
+npm i vue-router
+```
+
 ## 5.1 router/indenx.js
+
+```js
+import Vue from "vue";
+import VueRouter from "vue-router";
+import Home from "@/pages/Home";
+
+Vue.use(VueRouter); // 注册vue-router插件
+
+// 导出一个函数:  避免交叉请求带来的污染   (编写通用代码注意事项)
+export const createRouter = () => {
+  const router = new VueRouter({
+    mode: "history", // 兼容前后端的路劲模式
+    routes: [
+      {
+        path: "/",
+        name: "home",
+        component: Home,
+      },
+      {
+        path: "/about",
+        name: "about",
+        component: () => import("@/pages/About"), // 异步懒加载路由
+      },
+      {
+        path: "/posts",
+        name: "post-list",
+        component: () => import("@/pages/Posts"),
+      },
+      {
+        path: "*",
+        name: "error404",
+        component: () => import("@/pages/404"),
+      },
+    ],
+  });
+
+  return router;
+};
+```
 
 ## 5.2 app.js
 
+```js
+/**
+ * 通用启动入口
+ */
+
+import Vue from "vue";
+import App from "./App.vue";
+import { createRouter } from "./router"; // 引入路由
+
+// 导出一个工厂函数，用于创建新的
+// 应用程序、router 和 store 实例
+export function createApp() {
+  // 创建 router 实例
+  const router = createRouter();
+
+  const app = new Vue({
+    router, // 将路由挂载到 Vue 根实例中
+    // 根实例简单的渲染应用程序组件。
+    render: (h) => h(App),
+  });
+
+  return { app, router };
+}
+```
+
 ## 5.3 entry-server.js
+
+```js
+/**
+ * 服务端启动入口
+ */
+import { createApp } from "./app";
+
+// 每次渲染中重复调用此函数
+export default async (context) => {
+  // 因为有可能会是异步路由钩子函数或组件，所以我们将返回一个 Promise，
+  // 以便服务器能够等待所有的内容在渲染前，
+  // 就已经准备就绪。
+  const { app, router } = createApp();
+
+  // 设置服务器端 router 的位置
+  router.push(context.url);
+
+  // 等到 router 将可能的异步组件和钩子函数解析完
+  // new Promise((resolve, reject) => {
+  //   router.onReady(resolve, reject);
+  // });
+  await new Promise(router.onReady.bind(router));
+
+  return app;
+
+  // router.onReady(() => {
+  //   const matchedComponents = router.getMatchedComponents();
+  //   // 匹配不到的路由，执行 reject 函数，并返回 404
+  //   if (!matchedComponents.length) {
+  //     return reject({ code: 404 });
+  //   }
+
+  //   // Promise 应该 resolve 应用程序实例，以便它可以渲染
+  //   resolve(app);
+  // }, reject);
+};
+
+// export default (context) => {
+//   // 因为有可能会是异步路由钩子函数或组件，所以我们将返回一个 Promise，
+//   // 以便服务器能够等待所有的内容在渲染前，
+//   // 就已经准备就绪。
+//   return new Promise((resolve, reject) => {
+//     const { app, router } = createApp();
+
+//     // 设置服务器端 router 的位置
+//     router.push(context.url);
+
+//     // 等到 router 将可能的异步组件和钩子函数解析完
+//     router.onReady(() => {
+//       const matchedComponents = router.getMatchedComponents();
+//       // 匹配不到的路由，执行 reject 函数，并返回 404
+//       if (!matchedComponents.length) {
+//         return reject({ code: 404 });
+//       }
+
+//       // Promise 应该 resolve 应用程序实例，以便它可以渲染
+//       resolve(app);
+//     }, reject);
+//   });
+// };
+```
 
 ## 5.4 server.js
 
+```js
+// 路由渲染
+const routeRender = async (req, res) => {
+  // 传入外部数据在功template模板中使用 这个context会传递给entry-server.js的context中
+  const context = {
+    title: "拉勾教育",
+    meta: ` <meta name="description" content="拉勾教育"> `,
+    url: req.url,
+  };
+  try {
+    const html = await renderer.renderToString(context);
+    // 设置响应头
+    res.setHeader("Content-Type", "text/html; charset=utf8");
+    // 返回渲染完成的html
+    res.end(html);
+  } catch (err) {
+    res.status(500).end("Internal Server Error.");
+  }
+};
+// 服务端路由设置为 *，意味着所有的路由都会进入这里
+server.get(
+  "*",
+  isProd
+    ? // 生产模式有了render直接渲染就行了
+      routeRender
+    : async (req, res) => {
+        // TODO: 开发模式   等待有了 Renderer 渲染器以后， 调用 routeRender 进行渲染
+        await onReady; // 客户端 renderer 创建完成
+        routeRender(req, res); // 调用 routeRender 进行渲染
+      }
+);
+```
+
 ## 5.5 entry-client.js
 
+```js
+/**
+ * 客户端入口
+ */
+import { createApp } from "./app";
+// 客户端特定引导逻辑……
+const { app, router } = createApp();
+// 这里假定 App.vue 模板中根元素具有 `id="app"`
+
+// 路由加载完成挂载app
+router.onReady(() => {
+  // 这里假定 App.vue 模板中根元素具有 id = "app"
+  app.$mount("#app");
+});
+```
+
 ## 5.6 App.vue
+
+```js
+<template>
+  <!-- 客户端渲染的入口节点 -->
+  <div id="app">
+    <h1>{{ message }}</h1>
+    <h2>客户端动态交互</h2>
+    <div>
+      <input v-model="message" />
+    </div>
+    <button @click="onClick">点击测试122</button>
+
+    <ul>
+      <li>
+        <router-link to="/">Home</router-link>
+      </li>
+      <li>
+        <router-link to="/about">About</router-link>
+      </li>
+    </ul>
+
+    <!-- 路由出口 -->
+    <router-view></router-view>
+  </div>
+</template>
+<script>
+export default {
+  name: "App",
+  data: () => {
+    return {
+      message: "周末学习",
+    };
+  },
+  methods: {
+    onClick() {
+      console.log("hello word");
+    },
+  },
+};
+</script>
+<style></style>
+
+```
 
 # 6. 管理页面 Head
 

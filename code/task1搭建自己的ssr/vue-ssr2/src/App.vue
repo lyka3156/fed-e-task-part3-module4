@@ -7,6 +7,18 @@
       <input v-model="message" />
     </div>
     <button @click="onClick">点击测试122</button>
+
+    <ul>
+      <li>
+        <router-link to="/">Home</router-link>
+      </li>
+      <li>
+        <router-link to="/about">About</router-link>
+      </li>
+    </ul>
+
+    <!-- 路由出口 -->
+    <router-view></router-view>
   </div>
 </template>
 <script>

@@ -44,29 +44,27 @@ if (isProd) {
 }
 
 // 路由渲染
-const routeRender = (req, res) => {
-  console.log("访问/路由");
-  renderer.renderToString(
-    // 传入外部数据在功template模板中使用
-    {
-      title: "拉勾教育",
-      meta: ` <meta name="description" content="拉勾教育"> `,
-    },
-    (err, html) => {
-      if (err) {
-        return res.status(500).end("Internal Server Error.");
-      }
-      // 设置响应头
-      res.setHeader("Content-Type", "text/html; charset=utf8");
-      // 返回渲染完成的html
-      res.end(html);
-    }
-  );
+const routeRender = async (req, res) => {
+  // 传入外部数据在功template模板中使用 这个context会传递给entry-server.js的context中
+  const context = {
+    title: "拉勾教育",
+    meta: ` <meta name="description" content="拉勾教育"> `,
+    url: req.url,
+  };
+  try {
+    const html = await renderer.renderToString(context);
+    // 设置响应头
+    res.setHeader("Content-Type", "text/html; charset=utf8");
+    // 返回渲染完成的html
+    res.end(html);
+  } catch (err) {
+    res.status(500).end("Internal Server Error.");
+  }
 };
 
-// 访问/路由
+// 服务端路由设置为 *，意味着所有的路由都会进入这里
 server.get(
-  "/",
+  "*",
   isProd
     ? // 生产模式有了render直接渲染就行了
       routeRender
