@@ -10,8 +10,14 @@ export default async (context) => {
   // 就已经准备就绪。
   const { app, router } = createApp();
 
+  // 拿到vue-meta注入的$meta
+  const meta = app.$meta();
+
   // 设置服务器端 router 的位置
   router.push(context.url);
+
+  // 再将meta写入context中，这样的话index.template.html模板中就能使用meta了
+  context.meta = meta;
 
   // 等到 router 将可能的异步组件和钩子函数解析完
   // new Promise((resolve, reject) => {

@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- 使用外部模板数据使用3个{} 会进行原文输出，2个{}会处理成字符串 -->
-    {{{ meta }}}
-    <title>{{ title }}</title>
+
+    {{{ meta.inject().title.text() }}} {{{ meta.inject().meta.text() }}}
   </head>
   <body>
     <!-- 这个注释会把具体的渲染替换到这里，做标记 -->

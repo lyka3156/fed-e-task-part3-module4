@@ -1513,6 +1513,127 @@ export default {
 
 # 6. 管理页面 Head
 
+[参考文献](https://ssr.vuejs.org/zh/guide/head.html)
+
+[参考文献](https://vue-meta.nuxtjs.org/guide/ssr.html#inject-metadata-into-page-string)
+
+无论是服务端渲染还是客户端渲染，它们都使用的同一个页面模板。
+
+页面中的 body 是动态渲染出来的，但是页面的 head 是写死的，也就说我们希望不同的页面可以拥有自己的 head 内容，例如页面的 title、meta 等内容，所以下面我们来了解一下如何让不同的页面来定制自己的 head 头部内容。
+
+官方文档这里专门描述了关于页面 Head 的处理，相对于来讲更原生一些，使用比较麻烦，有兴趣的同学可以了解一下。
+
+我这里主要给大家介绍一个第三方解决方案：[vue-meta](https://github.com/nuxt/vue-meta)。
+
+Vue Meta 是一个支持 SSR 的第三方 Vue.js 插件，可让你轻松的实现不同页面的 head 内容管理。
+
+使用它的方式非常简单，而只需在页面组件中使用 `metaInfo` 属性配置页面的 head 内容即可。
+
+`app.js`
+
+```js
+/**
+ * 通用启动入口
+ */
+
+import Vue from "vue";
+import App from "./App.vue";
+import { createRouter } from "./router"; // 引入路由
+import VueMeta from "vue-meta";
+Vue.use(VueMeta); // 注册 Vue-Meta 插件
+
+// 全局混入metaInfo
+Vue.mixin({
+  metaInfo: {
+    titleTemplate: "%s - 周末学习模板!",
+  },
+});
+
+// 导出一个工厂函数，用于创建新的
+// 应用程序、router 和 store 实例
+export function createApp() {
+  // 创建 router 实例
+  const router = createRouter();
+
+  const app = new Vue({
+    router, // 将路由挂载到 Vue 根实例中
+    // 根实例简单的渲染应用程序组件。
+    render: (h) => h(App),
+  });
+
+  return { app, router };
+}
+```
+
+`entry-server.js`
+
+```js
+/**
+ * 服务端启动入口
+ */
+import { createApp } from "./app";
+
+// 每次渲染中重复调用此函数
+export default async (context) => {
+  // 因为有可能会是异步路由钩子函数或组件，所以我们将返回一个 Promise，
+  // 以便服务器能够等待所有的内容在渲染前，
+  // 就已经准备就绪。
+  const { app, router } = createApp();
+
+  // 拿到vue-meta注入的$meta
+  const meta = app.$meta();
+
+  // 设置服务器端 router 的位置
+  router.push(context.url);
+
+  // 再将meta写入context中，这样的话index.template.html模板中就能使用meta了
+  context.meta = meta;
+
+  // 等到 router 将可能的异步组件和钩子函数解析完
+
+  await new Promise(router.onReady.bind(router));
+
+  return app;
+};
+```
+
+`index.template.html`
+
+[参考文献](https://vue-meta.nuxtjs.org/guide/ssr.html#inject-metadata-into-page-string)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 使用外部模板数据使用3个{} 会进行原文输出，2个{}会处理成字符串   inject注入 -->
+
+    {{{ meta.inject().title.text() }}} {{{ meta.inject().meta.text() }}}
+  </head>
+  <body>
+    <!-- 这个注释会把具体的渲染替换到这里，做标记 -->
+
+    <!--vue-ssr-outlet-->
+
+    hello word1
+  </body>
+</html>
+```
+
+`pages/home`
+
+```js
+<script>
+export default {
+  name: 'HomePage',
+  metaInfo: {
+    title: '首页'
+  }
+}
+</script>
+```
+
 # 7. 数据预取和状态
 
 # 8. 服务端渲染优化
