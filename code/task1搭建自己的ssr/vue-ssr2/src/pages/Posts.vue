@@ -9,31 +9,31 @@
 
 <script>
 // import axios from 'axios'
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions } from "vuex";
 
 export default {
-  name: 'PostList',
+  name: "PostList",
   metaInfo: {
-    title: 'Posts'
+    title: "Posts",
   },
-  data () {
+  data() {
     return {
       // posts: []
-    }
+    };
   },
   computed: {
-    ...mapState(['posts'])
+    ...mapState(["posts"]),
   },
 
   // Vue SSR 特殊为服务端渲染提供的一个生命周期钩子函数
-  serverPrefetch () {
+  serverPrefetch() {
     // 发起 action，返回 Promise
     // this.$store.dispatch('getPosts')
-    return this.getPosts()
+    return this.getPosts();
   },
   methods: {
-    ...mapActions(['getPosts'])
-  }
+    ...mapActions(["getPosts"]),
+  },
   // 服务端渲染
   //     只支持 beforeCreate 和 created
   //     不会等待 beforeCreate 和 created 中的异步操作
@@ -48,9 +48,7 @@ export default {
   //   this.posts = data.data
   //   console.log('Posts Created End')
   // }
-}
+};
 </script>
 
-<style>
-
-</style>
+<style></style>
