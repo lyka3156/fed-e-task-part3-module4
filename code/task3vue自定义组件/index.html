@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<title>Popper example</title>
+<style>
+    #tooltip {
+        height: 100px;
+        background-color: #333;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    #button {
+        margin: 600px 400px;
+    }
+
+    .area {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        border: 1px solid gray;
+        overflow: auto;
+    }
+</style>
+
+<body>
+    <div class="area">
+        <button id="button" aria-describedby="tooltip">I'm a button</button>
+        <div id="tooltip" role="tooltip">I'm a tooltip</div>
+    </div>
+</body>
+<!--引入popperjs-->
+<script src="https://unpkg.com/@popperjs/core@^2.0.0"></script>
+<script>
+    const button = document.querySelector('#button');
+    const tooltip = document.querySelector('#tooltip');
+
+    /**
+     * 创建Popper,
+     * 第一个参数为Popper的基准DOM
+     * 第二个参数为Popper的弹出DOM
+     * 第三个参数为配置对象
+     */
+    Popper.createPopper(button, tooltip, {
+        placement: 'right',
+    });
+</script>
