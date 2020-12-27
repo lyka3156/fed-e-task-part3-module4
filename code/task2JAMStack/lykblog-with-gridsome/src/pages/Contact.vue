@@ -34,6 +34,7 @@
               <div class="form-group floating-label-form-group controls">
                 <label>Name</label>
                 <input
+                  v-model="form.name"
                   type="text"
                   class="form-control"
                   placeholder="Name"
@@ -48,6 +49,7 @@
               <div class="form-group floating-label-form-group controls">
                 <label>Email Address</label>
                 <input
+                  v-model="form.email"
                   type="email"
                   class="form-control"
                   placeholder="Email Address"
@@ -64,6 +66,7 @@
               >
                 <label>Phone Number</label>
                 <input
+                  v-model="form.phone"
                   type="tel"
                   class="form-control"
                   placeholder="Phone Number"
@@ -78,6 +81,7 @@
               <div class="form-group floating-label-form-group controls">
                 <label>Message</label>
                 <textarea
+                  v-model="form.message"
                   rows="5"
                   class="form-control"
                   placeholder="Message"
@@ -94,6 +98,7 @@
               type="submit"
               class="btn btn-primary"
               id="sendMessageButton"
+              @click.prevent="onSubmit"
             >
               Send
             </button>
@@ -105,8 +110,38 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "ContactPage",
+  metaInfo: {
+    title: "Contact",
+  },
+  data() {
+    return {
+      form: {
+        name: "",
+        email: "",
+        phone: "",
+        message: "",
+      },
+    };
+  },
+  methods: {
+    async onSubmit() {
+      console.log("提交表单", this.form);
+      try {
+        const { data } = await axios({
+          method: "POST",
+          url: "http://localhost:1337/contacts",
+          data: this.form,
+        });
+        // console.log(data);
+        window.alert("发送成功");
+      } catch (err) {
+        window.alert("发送失败，请稍后重试");
+      }
+    },
+  },
 };
 </script>
 

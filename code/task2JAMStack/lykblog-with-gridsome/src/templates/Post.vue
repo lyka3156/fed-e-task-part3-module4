@@ -18,9 +18,9 @@
               </h2> -->
               <span class="meta"
                 >Posted by
-                <a href="#">lyk</a>
-                {{ $page.post.created_at }}</span
-              >
+                <g-link to="/about">lyk</g-link>
+                {{ $page.post.created_at | date("MMMM DD, YYYY") }}
+              </span>
             </div>
           </div>
         </div>
@@ -64,6 +64,11 @@ import MarkdownIt from "markdown-it";
 const md = new MarkdownIt();
 export default {
   name: "PostPage",
+  metaInfo() {
+    return {
+      title: this.$page.post.title,
+    };
+  },
   // 将markdown文件转换成html
   methods: {
     mdToHtml(markdown) {

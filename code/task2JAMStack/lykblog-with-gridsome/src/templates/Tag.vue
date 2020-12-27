@@ -65,7 +65,14 @@ query($id: ID!){
 }
 </page-query>
 <script>
-export default {};
+export default {
+  name: "TagPage",
+  metaInfo() {
+    return {
+      title: this.$page.tag.title,
+    };
+  },
+};
 </script>
 
 <style>

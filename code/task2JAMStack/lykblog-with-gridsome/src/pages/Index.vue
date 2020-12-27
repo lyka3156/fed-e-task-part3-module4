@@ -39,8 +39,9 @@
             </g-link>
             <p class="post-meta">
               Posted by
-              <a href="#">lyk</a>
-              on {{ edge.node.created_at }}
+              <g-link to="/about">lyk</g-link>
+              on
+              {{ edge.node.created_at | date("MMMM DD, YYYY") }}
             </p>
             <!-- 标签 -->
             <p>
@@ -108,7 +109,7 @@ query($page: Int) {
 import { Pager } from "gridsome";
 export default {
   metaInfo: {
-    title: "Hello, world!",
+    title: "My Blog",
   },
   name: "HomePage",
   components: {

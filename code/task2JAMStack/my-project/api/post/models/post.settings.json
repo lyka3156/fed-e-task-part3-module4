@@ -2,7 +2,8 @@
   "kind": "collectionType",
   "collectionName": "posts",
   "info": {
-    "name": "Post"
+    "name": "Post",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -33,8 +34,9 @@
       "required": true
     },
     "tags": {
+      "collection": "tag",
       "via": "posts",
-      "collection": "tag"
+      "dominant": true
     }
   }
 }

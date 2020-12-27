@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "projects",
+  "info": {
+    "name": "project",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "default": "项目名称"
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "default": "标题"
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    },
+    "cover": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images"
+      ],
+      "plugin": "upload",
+      "required": false
+    },
+    "star": {
+      "type": "integer",
+      "default": 0
+    },
+    "watch": {
+      "type": "integer",
+      "default": 0
+    },
+    "fork": {
+      "type": "integer",
+      "default": 0
+    },
+    "githubUrl": {
+      "type": "string",
+      "default": "https://github.com/lyka3156"
+    },
+    "tags": {
+      "collection": "tag",
+      "via": "projects",
+      "dominant": true
+    }
+  }
+}

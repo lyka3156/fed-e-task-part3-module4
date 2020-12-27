@@ -14,10 +14,13 @@
       "type": "string",
       "required": true
     },
-    "posts": {
-      "collection": "post",
+    "projects": {
       "via": "tags",
-      "dominant": true
+      "collection": "project"
+    },
+    "posts": {
+      "via": "tags",
+      "collection": "post"
     }
   }
 }
