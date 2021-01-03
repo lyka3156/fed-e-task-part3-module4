@@ -2,7 +2,8 @@
   "kind": "singleType",
   "collectionName": "generals",
   "info": {
-    "name": "general"
+    "name": "general",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -26,6 +27,14 @@
       ],
       "plugin": "upload",
       "required": false
+    },
+    "githubUrl": {
+      "type": "string",
+      "default": "https://github.com/lyka3156"
+    },
+    "blogUrl": {
+      "type": "string",
+      "default": "https://github.com/lyka3156"
     }
   }
 }

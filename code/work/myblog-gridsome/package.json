@@ -1,0 +1,15 @@
+{
+  "name": "myblog-gridsome",
+  "private": true,
+  "scripts": {
+    "build": "gridsome build",
+    "develop": "gridsome develop",
+    "explore": "gridsome explore"
+  },
+  "dependencies": {
+    "element-ui": "^2.14.1",
+    "gridsome": "^0.7.0",
+    "markdown-it": "^12.0.4",
+    "mavon-editor": "^2.9.0"
+  }
+}
